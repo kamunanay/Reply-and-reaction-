@@ -1,0 +1,36 @@
+{
+  "name": "xiao-bot",
+  "version": "2.0.0",
+  "description": "WhatsApp Bot dengan Auto Reply & Reaction",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "install-deps": "npm install",
+    "fix-permission": "chmod +x *.sh"
+  },
+  "keywords": [
+    "whatsapp-bot",
+    "bot",
+    "termux",
+    "auto-reply"
+  ],
+  "author": "Ganz",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.4.0",
+    "axios": "^1.6.0",
+    "chalk": "^4.1.2",
+    "pino": "^8.15.0",
+    "moment-timezone": "^0.5.43",
+    "cfonts": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/xiao-bot.git"
+  }
+}

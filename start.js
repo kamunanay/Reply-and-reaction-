@@ -7,9 +7,9 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const pino = require("pino");
-const chalk = require("chalk");
+const chalk = require("chalk"); // versi 4, jadi bisa require()
 const readline = require("readline");
-const { setupMessageHandler } = require("./xiao");
+const { setupMessageHandler } = require("./xiao"); // handler pesan
 
 // Input nomor di terminal
 const rl = readline.createInterface({
@@ -24,21 +24,23 @@ async function startBot() {
     const sock = makeWASocket({
         logger: pino({ level: "silent" }),
         auth: state,
+        printQRInTerminal: false, // kita pakai pairing code
         browser: Browsers.macOS("Desktop")
     });
 
-    // Handler pesan (dari xiao.js)
+    // Handler pesan
     setupMessageHandler(sock);
 
-    // Login dengan pairing code
+    // Pairing code login
     if (!sock.authState.creds.registered) {
         rl.question("📱 Masukkan nomor WhatsApp kamu (contoh: 628xxxxxx): ", async (nomor) => {
             const code = await sock.requestPairingCode(nomor);
             console.log(chalk.green(`🔑 Pairing code: ${code}`));
-            console.log("➡️ Masukkan kode ini di WhatsApp: *Linked Devices > Pair with code*");
+            console.log(chalk.yellow("➡️ Masukkan kode ini di WhatsApp: *Linked Devices > Pair with code*"));
         });
     }
 
+    // Update koneksi
     sock.ev.on("connection.update", (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
@@ -54,8 +56,9 @@ async function startBot() {
         }
     });
 
+    // Simpan session
     sock.ev.on("creds.update", saveCreds);
 }
 
-// Mulai bot
+// Jalankan bot
 startBot();

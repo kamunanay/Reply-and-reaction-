@@ -7,15 +7,9 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const pino = require("pino");
-const chalk = require("chalk"); // pakai chalk v4
-const readline = require("readline");
-const { setupMessageHandler } = require("./xiao"); // handler pesan kamu
-
-// Input terminal
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+const chalk = require("chalk");
+const qrcode = require("qrcode-terminal"); // tambahan untuk cetak QR ke terminal
+const { setupMessageHandler } = require("./xiao");
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState("session");
@@ -24,33 +18,22 @@ async function startBot() {
     const sock = makeWASocket({
         logger: pino({ level: "silent" }),
         auth: state,
-        printQRInTerminal: true, // default: QR muncul
+        printQRInTerminal: false, // kita handle QR manual
         browser: Browsers.macOS("Desktop")
     });
 
     // Handler pesan
     setupMessageHandler(sock);
 
-    // Pairing code mode (opsional, hanya jika perangkat support)
-    if (!sock.authState.creds.registered) {
-        rl.question("📱 Masukkan nomor WhatsApp kamu (contoh: 628xxxxxx, kosongkan untuk QR): ", async (nomor) => {
-            if (nomor && nomor.length > 0) {
-                try {
-                    const code = await sock.requestPairingCode(nomor);
-                    console.log(chalk.green(`🔑 Pairing code: ${code}`));
-                    console.log(chalk.yellow("➡️ Masukkan kode ini di WhatsApp: *Linked Devices > Pair with code*"));
-                } catch (err) {
-                    console.log(chalk.red("❌ Gagal ambil pairing code. Coba QR scan aja."));
-                }
-            } else {
-                console.log(chalk.yellow("📷 Gunakan QR code yang muncul di terminal untuk login"));
-            }
-        });
-    }
-
-    // Update koneksi
+    // QR Code login
     sock.ev.on("connection.update", (update) => {
-        const { connection, lastDisconnect } = update;
+        const { connection, qr, lastDisconnect } = update;
+
+        if (qr) {
+            console.log(chalk.yellow("📷 Scan QR berikut untuk login:"));
+            qrcode.generate(qr, { small: true }); // tampilkan QR di terminal
+        }
+
         if (connection === "close") {
             const reason = lastDisconnect?.error?.output?.statusCode;
             if (reason !== DisconnectReason.loggedOut) {

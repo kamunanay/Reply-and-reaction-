@@ -1,4 +1,4 @@
-require('./settings');
+require('./setting');
 const { delay } = require('@whiskeysockets/baileys');
 const chalk = require('chalk');
 const { 

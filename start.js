@@ -2,7 +2,6 @@ const {
     default: makeWASocket, 
     useMultiFileAuthState, 
     fetchLatestBaileysVersion, 
-    makeInMemoryStore, 
     DisconnectReason,
     Browsers
 } = require("@whiskeysockets/baileys");
@@ -11,9 +10,6 @@ const pino = require("pino");
 const chalk = require("chalk");
 const readline = require("readline");
 const { setupMessageHandler } = require("./xiao");
-
-// Store memory
-const store = makeInMemoryStore({ logger: pino({ level: "silent" }) });
 
 // Input nomor di terminal
 const rl = readline.createInterface({
@@ -31,10 +27,8 @@ async function startBot() {
         browser: Browsers.macOS("Desktop")
     });
 
-    store.bind(sock.ev);
-
-    // Handler pesan
-    setupMessageHandler(sock, store);
+    // Handler pesan (dari xiao.js)
+    setupMessageHandler(sock);
 
     // Login dengan pairing code
     if (!sock.authState.creds.registered) {

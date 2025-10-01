@@ -1,4 +1,4 @@
-require('./settings');
+require('./setting');
 const fs = require('fs');
 const pino = require('pino');
 const chalk = require('chalk');

@@ -7,11 +7,11 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const pino = require("pino");
-const chalk = require("chalk"); // versi 4, jadi bisa require()
+const chalk = require("chalk"); // pakai chalk v4
 const readline = require("readline");
-const { setupMessageHandler } = require("./xiao"); // handler pesan
+const { setupMessageHandler } = require("./xiao"); // handler pesan kamu
 
-// Input nomor di terminal
+// Input terminal
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -24,19 +24,27 @@ async function startBot() {
     const sock = makeWASocket({
         logger: pino({ level: "silent" }),
         auth: state,
-        printQRInTerminal: false, // kita pakai pairing code
+        printQRInTerminal: true, // default: QR muncul
         browser: Browsers.macOS("Desktop")
     });
 
     // Handler pesan
     setupMessageHandler(sock);
 
-    // Pairing code login
+    // Pairing code mode (opsional, hanya jika perangkat support)
     if (!sock.authState.creds.registered) {
-        rl.question("📱 Masukkan nomor WhatsApp kamu (contoh: 628xxxxxx): ", async (nomor) => {
-            const code = await sock.requestPairingCode(nomor);
-            console.log(chalk.green(`🔑 Pairing code: ${code}`));
-            console.log(chalk.yellow("➡️ Masukkan kode ini di WhatsApp: *Linked Devices > Pair with code*"));
+        rl.question("📱 Masukkan nomor WhatsApp kamu (contoh: 628xxxxxx, kosongkan untuk QR): ", async (nomor) => {
+            if (nomor && nomor.length > 0) {
+                try {
+                    const code = await sock.requestPairingCode(nomor);
+                    console.log(chalk.green(`🔑 Pairing code: ${code}`));
+                    console.log(chalk.yellow("➡️ Masukkan kode ini di WhatsApp: *Linked Devices > Pair with code*"));
+                } catch (err) {
+                    console.log(chalk.red("❌ Gagal ambil pairing code. Coba QR scan aja."));
+                }
+            } else {
+                console.log(chalk.yellow("📷 Gunakan QR code yang muncul di terminal untuk login"));
+            }
         });
     }
 

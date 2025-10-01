@@ -1,9 +1,9 @@
 const {
   default: makeWASocket,
-  useMultiFileAuthState,
-  DisconnectReason
+  useMultiFileAuthState
 } = require("@whiskeysockets/baileys");
 const pino = require("pino");
+const qrcode = require("qrcode-terminal"); // tambahin ini
 const { messageHandler } = require("./xiao");
 
 async function startBot() {
@@ -16,22 +16,20 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
-  // 🔹 Handle QR code di terminal
   sock.ev.on("connection.update", (update) => {
     const { connection, qr } = update;
     if (qr) {
-      console.log("📱 Scan QR Code ini untuk login:");
-      console.log(qr);
+      console.log("📱 Scan QR berikut di WhatsApp kamu:");
+      qrcode.generate(qr, { small: true }); // tampilkan QR kotak
     }
     if (connection === "open") {
       console.log("✅ Bot berhasil tersambung ke WhatsApp!");
     } else if (connection === "close") {
-      console.log("❌ Koneksi terputus, mencoba menyambung ulang...");
+      console.log("❌ Koneksi terputus, mencoba ulang...");
       startBot();
     }
   });
 
-  // 🔹 Event pesan masuk
   sock.ev.on("messages.upsert", async (m) => {
     const msg = m.messages[0];
     if (!msg.message) return;
